@@ -27,18 +27,23 @@ curtailment_cost         = 1000      # curtailment penalty $/GWh
 demand                  = 1000      # kW, how much power must the system deliver?
 
 # create the model
-model = AbstractModel(name = 'solar-storage model')
+model = AbstractModel(name = 'wind-solar-storage model')
 
 # create model sets
 model.t                 = Set(initialize = [i for i in range(8760)], ordered=True)    
-model.tech              = Set(initialize =['s_cap', 'ESS_power_cap', 'ESS_energy_cap'], ordered=True)  
+model.tech              = Set(initialize =['w_cap', 's_cap', 'ESS_power_cap', 'ESS_energy_cap'], ordered=True)  
 
+# parameters
+model.wind              = Param(model.t)
 model.solar             = Param(model.t)
-model.costs             = Param(model.tech, initialize={'s_cap' : solar_cap_cost, 'ESS_power_cap' : ESS_p_cap_cost, 'ESS_energy_cap' : ESS_e_cap_cost})
+model.demand            = Param(model.t)
+model.costs             = Param(model.tech, initialize={'s_cap' : solar_cap_cost, 'w_cap' : wind_cap_cost, 'ESS_power_cap' : ESS_p_cap_cost, 'ESS_energy_cap' : ESS_e_cap_cost})
 
-## load data into parameters, solar and wind data are houlry capacity factor data
+## load data into parameters, solar and wind data are hourly capacity factor data
 data = DataPortal()
-data.load(filename = 'opt_model_data/wind_solar_cf.csv', select = ('t', 'solar'), param = model.solar, index = model.t)
+data.load(filename = 'opt_model_data/2022_ERCOT_data.csv', select = ('t', 'wind'), param = model.wind, index = model.t)
+data.load(filename = 'opt_model_data/2022_ERCOT_data.csv', select = ('t', 'solar'), param = model.solar, index = model.t)
+data.load(filename = 'opt_model_data/2022_ERCOT_data.csv', select = ('t', 'demand'), param = model.demand, index = model.t)
 
 ## define variables
 model.cap               = Var(model.tech, domain = NonNegativeReals)
