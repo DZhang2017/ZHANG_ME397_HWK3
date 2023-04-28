@@ -61,7 +61,7 @@ model.OBJ = Objective(rule=obj_expression)
 
 # supply/demand match constraint
 def match_const(model, i):
-    return model.solar[i]*model.cap['s_cap'] + model.ESS_d[i] - model.ESS_c[i] - model.curt[i] - demand == 0   
+    return model.solar[i]*model.cap['s_cap'] + model.wind[i]*model.cap['w_cap'] + model.ESS_d[i] - model.ESS_c[i] - model.curt[i] - model.demand[i] == 0   
 model.match = Constraint(model.t, rule = match_const)
 
 # ESS charge/discharge constraint
@@ -87,6 +87,7 @@ def SOC_const(model, i):
 model.SOC_const = Constraint(model.t, rule = SOC_const)
 
 
+
 # create instance of the model (abstract only)
 model = model.create_instance(data)
 
@@ -94,13 +95,13 @@ model = model.create_instance(data)
 # model.t.pprint()
 
 # solve the model
-opt = SolverFactory('glpk')
-# opt = SolverFactory('gurobi')
+# opt = SolverFactory('glpk')
+opt = SolverFactory('gurobi')
 status = opt.solve(model) 
 
 # write model outputs to a JSON file
 model.solutions.store_to(status)
-status.write(filename='solar_storage.json', format='json')
+status.write(filename='ZHANG_HWK3_OPT_OUTPUTS.json', format='json')
 
-# pyomo solve solar_storage_model.py --solver=glpk
-# pyomo solve solar_storage_model.py --solver=gurobi
+# pyomo solve ZHANG_HWK_3_OPT.py --solver=glpk
+# pyomo solve ZHANG_HWK_3_OPT.py --solver=gurobi
